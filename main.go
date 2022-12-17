@@ -67,6 +67,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			r, g, b, _ := img.At(x, y).RGBA()
@@ -81,10 +82,9 @@ func main() {
 	for _, char := range brightString {
 		brightList = append(brightList, string(char))
 	}
-	// fmt.Println("brightlist:", brightList)
 
 	var rangeList []Range
-	chunk := 255.0 / 67.0
+	chunk := 255.0 / 66.0
 	for i := chunk; i <= 255; i += chunk {
 		rangeList = append(rangeList, Range{L: int(i - chunk), U: int(i)})
 	}
@@ -95,7 +95,6 @@ func main() {
 	}
 	_ = rangeMap
 
-	// print the art out to the terminal using the brightness array and range map
 	printArt(rangeMap, brightnessArr)
 
 }
