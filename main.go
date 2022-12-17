@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"image/jpeg"
+	"os"
 	"sort"
-
-	"gopkg.in/gographics/imagick.v2/imagick"
 )
 
 // ----- Rangemap implementation from d-schmidt@github.com: rangemap.go
@@ -42,50 +42,38 @@ func main() {
 		return
 	}
 
-	// ----- load the imagick library
-	imagick.Initialize()
-	defer imagick.Terminate()
-
-	mw := imagick.NewMagickWand()
-	defer mw.Destroy()
-
-	err := mw.ReadImage(*filename)
+	// read the image and construct the brightness array
+	imgfile, err := os.Open(*filename)
 	if err != nil {
 		panic(err)
 	}
 
-	width := mw.GetImageWidth()
-	height := mw.GetImageHeight()
-	fmt.Println("Width:", width, "Height:", height)
-
-	// ----- create 2d array of pixel tuple native types
-	fmt.Println("Creating pixel matrix")
-	var imgArr [][]*imagick.PixelWand
-	iterator := mw.NewPixelIterator()
-	defer iterator.Destroy()
-	for i := 0; i < int(height); i++ {
-		pixels := iterator.GetNextIteratorRow()
-		imgArr = append(imgArr, pixels)
-		iterator.SyncIterator()
+	imgCfg, err := jpeg.DecodeConfig(imgfile)
+	if err != nil {
+		panic(err)
 	}
 
-	// create the brigntess array
-	fmt.Println("Creating the brightness array")
-	brightnessArr := make([][]int, height)
-	for i := 0; i < int(height); i++ {
+	width := imgCfg.Width
+	height := imgCfg.Height
+
+	// initialize brightness array
+	var brightnessArr [][]int = make([][]int, height)
+	for i := 0; i < height; i++ {
 		brightnessArr[i] = make([]int, width)
 	}
-	for i, pixelRow := range imgArr {
-		for j, pixel := range pixelRow {
-			// fmt.Println("value being added to barr:", int((pixel.GetRed()*255)+(pixel.GetGreen()*255)+(pixel.GetBlue()*255))/3)
-			brightnessArr[i][j] = int((pixel.GetRed()*255)*(pixel.GetGreen()*255)*(pixel.GetBlue()*255)) / 3
+
+	imgfile.Seek(0, 0)
+	img, err := jpeg.Decode(imgfile)
+	if err != nil {
+		panic(err)
+	}
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			r, g, b, _ := img.At(x, y).RGBA()
+			average := ((r / 256.0) + (g / 256.0) + (b / 256.0)) / 3.0
+			brightnessArr[y][x] = int(average)
 		}
 	}
-	fmt.Println("Created the brightness array!")
-	fmt.Println("brightness arr size:", len(brightnessArr), len(brightnessArr[0]))
-
-	// ----- create the ascii brightness map
-	fmt.Println("Creating ascii brightness maps")
 
 	// construct values and range for map search
 	brightString := "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
@@ -101,20 +89,24 @@ func main() {
 		rangeList = append(rangeList, Range{L: int(i - chunk), U: int(i)})
 	}
 
-	fmt.Println("Created ascii brightness map!")
-
 	rangeMap := RangeMap{
 		Values: brightList,
 		Keys:   rangeList,
 	}
 	_ = rangeMap
 
-	// ----- Print out the characters to terminal with the range map and brightness values
-	// for _, row := range brightnessArr {
-	// 	for _, col := range row {
-	// 		value, _ := rangeMap.Get(int(col))
-	// 		fmt.Printf("%s", value)
-	// 	}
-	// 	fmt.Printf("\n")
-	// }
+	// print the art out to the terminal using the brightness array and range map
+	printArt(rangeMap, brightnessArr)
+
+}
+
+func printArt(rangeMap RangeMap, brightnessArr [][]int) {
+	for _, row := range brightnessArr {
+		for _, col := range row {
+			value, _ := rangeMap.Get(int(col))
+			_ = value
+			fmt.Printf("%s", value)
+		}
+		fmt.Printf("\n")
+	}
 }
