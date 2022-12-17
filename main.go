@@ -6,6 +6,8 @@ import (
 	"image/jpeg"
 	"os"
 	"sort"
+
+	"github.com/nfnt/resize"
 )
 
 // ----- Rangemap implementation from d-schmidt@github.com: rangemap.go
@@ -35,6 +37,7 @@ func (rm RangeMap) Get(key int) (string, bool) {
 func main() {
 	// ----- flags
 	filename := flag.String("file", "", "Name of file to turn into ascii art")
+	scalingFactor := flag.Float64("scale", 1.0, "Scaling factor to resize the image")
 	flag.Parse()
 
 	if *filename == "" {
@@ -47,8 +50,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer imgfile.Close()
 
 	imgCfg, err := jpeg.DecodeConfig(imgfile)
+	if err != nil {
+		panic(err)
+	}
+
+	imgfile.Seek(0, 0)
+	img, err := jpeg.Decode(imgfile)
 	if err != nil {
 		panic(err)
 	}
@@ -56,16 +66,22 @@ func main() {
 	width := imgCfg.Width
 	height := imgCfg.Height
 
+	// resize image if flag declared
+	if *scalingFactor != 1.0 {
+		width = int(float64(imgCfg.Width) * *scalingFactor)
+		height = int(float64(imgCfg.Height) * *scalingFactor)
+		img = resize.Resize(uint(width),
+			uint(height),
+			img,
+			resize.Lanczos3,
+		)
+		fmt.Println("Resized dim:", width, height)
+	}
+
 	// initialize brightness array
 	var brightnessArr [][]int = make([][]int, height)
 	for i := 0; i < height; i++ {
 		brightnessArr[i] = make([]int, width)
-	}
-
-	imgfile.Seek(0, 0)
-	img, err := jpeg.Decode(imgfile)
-	if err != nil {
-		panic(err)
 	}
 
 	for y := 0; y < height; y++ {
