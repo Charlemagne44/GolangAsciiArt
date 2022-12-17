@@ -105,6 +105,8 @@ func printArt(rangeMap RangeMap, brightnessArr [][]int) {
 			value, _ := rangeMap.Get(int(col))
 			_ = value
 			fmt.Printf("%s", value)
+			fmt.Printf("%s", value)
+			fmt.Printf("%s", value)
 		}
 		fmt.Printf("\n")
 	}
