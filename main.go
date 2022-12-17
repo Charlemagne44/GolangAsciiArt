@@ -23,7 +23,6 @@ type RangeMap struct {
 
 func (rm RangeMap) Get(key int) (string, bool) {
 	i := sort.Search(len(rm.Keys), func(i int) bool {
-		// fmt.Printf("search %v at index %d for %v is %v\n", rm.Keys[i], i, key, key < rm.Keys[i].L)
 		return key < rm.Keys[i].L
 	})
 
@@ -41,7 +40,6 @@ func main() {
 	flag.Parse()
 
 	if *filename == "" {
-		fmt.Println("need valid filename")
 		return
 	}
 
@@ -75,7 +73,6 @@ func main() {
 			img,
 			resize.Lanczos3,
 		)
-		fmt.Println("Resized dim:", width, height)
 	}
 
 	// initialize brightness array
