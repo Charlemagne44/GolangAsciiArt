@@ -100,7 +100,7 @@ func main() {
 	}
 
 	var rangeList []Range
-	chunk := 255.0 / 66.0
+	chunk := 255.0 / 64.0
 	for i := chunk; i <= 255; i += chunk {
 		rangeList = append(rangeList, Range{L: int(i - chunk), U: int(i)})
 	}
@@ -119,7 +119,6 @@ func printArt(rangeMap RangeMap, brightnessArr [][]int) {
 	for _, row := range brightnessArr {
 		for _, col := range row {
 			value, _ := rangeMap.Get(int(col))
-			_ = value
 			fmt.Printf("%s", value)
 			fmt.Printf("%s", value)
 			fmt.Printf("%s", value)
