@@ -40,6 +40,12 @@ func main() {
 	scalingFactor := flag.Float64("scale", 1.0, "Scaling factor to resize the image")
 	// good for sharpening real images with lots of noise and vibrance for better ascii result
 	contrastFactor := flag.Int("contrast", 0, "Contrast value to apply to image")
+	// name for an output text file
+	outputName := flag.String("out", "", "name for output to be written")
+	// print to terminal option
+	printOption := flag.Bool("print", false, "print art to stdout")
+	// html output option
+	htmlOption := flag.String("html", "", "print to html file")
 	flag.Parse()
 
 	if *filename == "" {
@@ -71,11 +77,6 @@ func main() {
 	if *scalingFactor != 1.0 {
 		width = int(float64(imgCfg.Width) * *scalingFactor)
 		height = int(float64(imgCfg.Height) * *scalingFactor)
-		// img = resize.Resize(uint(width),
-		// 	uint(height),
-		// 	img,
-		// 	resize.Lanczos3,
-		// )
 		img = imaging.Resize(img, width, height, imaging.Lanczos)
 	}
 
@@ -117,8 +118,58 @@ func main() {
 	}
 	_ = rangeMap
 
-	printArt(rangeMap, brightnessArr)
+	if *printOption {
+		printArt(rangeMap, brightnessArr)
+	}
 
+	if *outputName != "" {
+		writeArt(rangeMap, brightnessArr, *outputName)
+	}
+
+	if *htmlOption != "" {
+		writeHTML(rangeMap, brightnessArr, *htmlOption)
+	}
+}
+
+func writeHTML(rangeMap RangeMap, brightnessArr [][]int, fileName string) {
+	file, err := os.Create(fileName)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	file.WriteString("<body>\n")
+	file.WriteString("<tt>")
+
+	for _, row := range brightnessArr {
+		for _, col := range row {
+			value, _ := rangeMap.Get(int(col))
+			file.WriteString(value)
+			file.WriteString(value)
+			file.WriteString(value)
+		}
+		file.WriteString("<br>\n")
+	}
+	file.WriteString("</tt>")
+	file.WriteString("</body>")
+}
+
+func writeArt(rangeMap RangeMap, brightnessArr [][]int, fileName string) {
+	file, err := os.Create(fileName)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	for _, row := range brightnessArr {
+		for _, col := range row {
+			value, _ := rangeMap.Get(int(col))
+			file.WriteString(value)
+			file.WriteString(value)
+			file.WriteString(value)
+		}
+		file.WriteString("\n")
+	}
 }
 
 func printArt(rangeMap RangeMap, brightnessArr [][]int) {
