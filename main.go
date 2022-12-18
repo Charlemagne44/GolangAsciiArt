@@ -7,7 +7,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/nfnt/resize"
+	"github.com/disintegration/imaging"
 )
 
 // ----- Rangemap implementation from d-schmidt@github.com: rangemap.go
@@ -34,9 +34,12 @@ func (rm RangeMap) Get(key int) (string, bool) {
 }
 
 func main() {
-	// ----- flags
+	// filename for image to edit
 	filename := flag.String("file", "", "Name of file to turn into ascii art")
+	// 1.0 scaling factor will create 3 ascii characteres per 1 pixel
 	scalingFactor := flag.Float64("scale", 1.0, "Scaling factor to resize the image")
+	// good for sharpening real images with lots of noise and vibrance for better ascii result
+	contrastFactor := flag.Int("contrast", 0, "Contrast value to apply to image")
 	flag.Parse()
 
 	if *filename == "" {
@@ -68,11 +71,17 @@ func main() {
 	if *scalingFactor != 1.0 {
 		width = int(float64(imgCfg.Width) * *scalingFactor)
 		height = int(float64(imgCfg.Height) * *scalingFactor)
-		img = resize.Resize(uint(width),
-			uint(height),
-			img,
-			resize.Lanczos3,
-		)
+		// img = resize.Resize(uint(width),
+		// 	uint(height),
+		// 	img,
+		// 	resize.Lanczos3,
+		// )
+		img = imaging.Resize(img, width, height, imaging.Lanczos)
+	}
+
+	// if contrast flag declared
+	if *contrastFactor != 0 {
+		img = imaging.AdjustContrast(img, float64(*contrastFactor))
 	}
 
 	// initialize brightness array
