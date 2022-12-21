@@ -3,7 +3,7 @@ all:
 
 clean:
 	go clean
-	rm bin/*
+	rm -rf bin
 
 bin:
 	GOOS=windows GOARCH=amd64 go build -o bin/asciiImage-amd64.exe .
