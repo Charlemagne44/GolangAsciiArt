@@ -4,7 +4,6 @@
 *.dll
 *.so
 *.dylib
-*.jpg
 asciiImage
 
 # Test binary, built with `go test -c`
