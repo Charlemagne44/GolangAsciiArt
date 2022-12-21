@@ -18,9 +18,9 @@
 
 ## Examples
 <pre>./asciiImage-amd64.exe -file knight.jpg -contrast 20 -scale 0.3 -out knight.txt -html knight.html</pre>
-Sample
+Sample<br>
 ![Knight Original](samples/knight.jpg)
-Result
+Result<br>
 ![Knight Result](samples/knight_result.png)
 
 ## Tips
